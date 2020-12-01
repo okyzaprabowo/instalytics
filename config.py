@@ -1,45 +1,31 @@
-# -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
-
+"""Flask config."""
 import os
-from   decouple import config
+from os import environ, path
+from dotenv import load_dotenv
 
-class Config(object):
+BASE_DIR = path.abspath(path.dirname(__file__))
+load_dotenv(path.join(BASE_DIR, '.env'))
 
-    basedir    = os.path.abspath(os.path.dirname(__file__))
 
-    # Set up the App SECRET_KEY
-    SECRET_KEY = config('SECRET_KEY', default='S#perS3crEt_007')
+class Config:
+    """Flask configuration variables."""
 
-    # This will create a file in <app> FOLDER
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
+    # General Config
+    FLASK_APP = environ.get('FLASK_APP')
+    FLASK_ENV = environ.get('FLASK_ENV')
+    SECRET_KEY = environ.get('SECRET_KEY')
+
+    # Assets
+    LESS_BIN = environ.get('LESS_BIN')
+    ASSETS_DEBUG = environ.get('ASSETS_DEBUG')
+    LESS_RUN_IN_DEBUG = environ.get('LESS_RUN_IN_DEBUG')
+
+    # Static Assets
+    STATIC_FOLDER = 'static'
+    TEMPLATES_FOLDER = 'templates'
+    COMPRESSOR_DEBUG = environ.get('COMPRESSOR_DEBUG')
+
+    # Flask-SQLAlchemy
+    SQLALCHEMY_DATABASE_URI = environ.get('SQLALCHEMY_DATABASE_URI') + os.path.join(BASE_DIR,'db.sqlite3')
+    SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-class ProductionConfig(Config):
-    DEBUG = False
-
-    # Security
-    SESSION_COOKIE_HTTPONLY  = True
-    REMEMBER_COOKIE_HTTPONLY = True
-    REMEMBER_COOKIE_DURATION = 3600
-
-    # PostgreSQL database
-    SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(
-        config( 'DB_ENGINE'   , default='postgresql'    ),
-        config( 'DB_USERNAME' , default='appseed'       ),
-        config( 'DB_PASS'     , default='pass'          ),
-        config( 'DB_HOST'     , default='localhost'     ),
-        config( 'DB_PORT'     , default=5432            ),
-        config( 'DB_NAME'     , default='appseed-flask' )
-    )
-
-class DebugConfig(Config):
-    DEBUG = True
-
-# Load all possible configurations
-config_dict = {
-    'Production': ProductionConfig,
-    'Debug'     : DebugConfig
-}
